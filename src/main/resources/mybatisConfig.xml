@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<!--配置别名-->
+	<typeAliases>
+		<!--别名就是类名-->
+		<package name="com.k9501.house.entity"></package>
+	</typeAliases>
+	
+	<!--分页插件-->
+	<plugins>
+		<plugin interceptor="com.github.pagehelper.PageInterceptor">
+			<!-- 分页参数合理化，默认false禁用-->
+			<!--pageNum表示当前页  pages表示尾页-->
+			<!--true启用合理化时，如果pageNum<1会查询第一页，如果pageNum>pages会查询最后一页-->
+			<!--false禁用合理化时，如果pageNum<1或pageNum>pages会返回空数据-->
+			<property name="reasonable"   value="true"/>
+			<!-- 设置数据库类型 Oracle,Mysql,MariaDB,SQLite,Hsqldb,PostgreSQL六种数据库-->
+			<property name="helperDialect" value="mysql"/>
+		</plugin>
+	</plugins>
+
+	<!-- 关联局部配置文件 -->
+	<mappers>
+		<mapper resource="com/k9501/house/mapper/DistrictMapper.xml"/>
+		<mapper resource="com/k9501/house/mapper/HouseMapper.xml"/>
+		<mapper resource="com/k9501/house/mapper/StreetMapper.xml"/>
+		<mapper resource="com/k9501/house/mapper/TypeMapper.xml"/>
+		<mapper resource="com/k9501/house/mapper/UsersMapper.xml"/>
+	</mappers>
+</configuration>

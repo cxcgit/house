@@ -1,0 +1,253 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>全部房屋类型</title>
+    <link rel="stylesheet" type="text/css" href="../easyUI/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../easyUI/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="../easyUI/css/demo.css">
+    <script src="../js/jquery-1.8.3.js"></script>
+    <!--jquery.easyui.min.js包含了easyUI中的所有插件-->
+    <script src="../js/jquery.easyui.min.js"></script>
+</head>
+<body>
+<!--显示全部的表格-->
+<table id="dg"></table>
+
+<!--显示工具栏-->
+<div id="ToolBar">
+    <div style="height: 40px;">
+        <a href="javascript:Add()" class="easyui-linkbutton"
+           iconCls="icon-add" plain="true">添加</a> <a
+            href="javascript:ModifyBySelect()" class="easyui-linkbutton"
+            iconCls="icon-edit" plain="true">修改</a> <a
+            href="javascript:DeleteByFruitName()" class="easyui-linkbutton"
+            iconCls="icon-remove" plain="true">删除选中数据</a>
+    </div>
+    手机号<input type="text" name="telePhone" id="telePhone">
+    <a id="btn" href="javascript:search()" class="easyui-linkbutton" data-options="iconCls:'icon-search'">搜索</a>
+</div>
+
+<!--添加弹框-->
+<div id="AddDialog" class="easyui-dialog" buttons="#AddDialogButtons"
+     style="width: 280px; height: 250px; padding: 10px 20px;" closed="true">
+    <form id="AddDialogForm" method="post"><br/>
+        <table>
+            <tr>
+                <td>同户名：</td>
+                <td><input type="text" name="name"></td>
+            </tr>
+            <tr>
+                <td>密码：</td>
+                <td><input type="password" name="password"></td>
+            </tr>
+            <tr>
+                <td>手机号：</td>
+                <td><input type="text" name="telephone"></td>
+            </tr>
+            <tr hidden>
+                <td></td>
+                <td><input type="hidden" name="isadmin" value="1"></td>
+            </tr>
+        </table>
+    </form>
+</div>
+
+<!--弹框按钮-->
+<div id="AddDialogButtons">
+    <a href="javascript:AddDialog()" class="easyui-linkbutton" iconCls="icon-ok">保存</a>
+    <a href="javascript:CloseDialog('AddDialog')" class="easyui-linkbutton" iconCls="icon-cancel">取消</a>
+</div>
+
+<!--修改弹框-->
+<div id="UpDialog" class="easyui-dialog" buttons="#UpDialogButtons"
+     style="width: 280px; height: 250px; padding: 10px 20px;" closed="true">
+    <form id="UpDialogForm" method="post">
+        <table>
+            <tr hidden>
+                <td>同户编号：</td>
+                <td><input type="text" name="id"></td>
+            </tr>
+            <tr>
+                <td>同户名：</td>
+                <td><input type="text" name="name"></td>
+            </tr>
+            <tr>
+                <td>密码：</td>
+                <td><input type="password" name="password"></td>
+            </tr>
+            <tr>
+                <td>手机号：</td>
+                <td><input type="text" name="telephone"></td>
+            </tr>
+            <tr hidden>
+                <td></td>
+                <td><input type="hidden" name="isadmin" value="1"></td>
+            </tr>
+        </table>
+    </form>
+</div>
+
+<!--弹框按钮-->
+<div id="UpDialogButtons">
+    <a href="javascript:UpDialog()" class="easyui-linkbutton" iconCls="icon-ok">保存</a>
+    <a href="javascript:CloseDialog('UpDialog')" class="easyui-linkbutton" iconCls="icon-cancel">取消</a>
+</div>
+
+<script type="text/javascript">
+    //查询全部数据显示
+    $('#dg').datagrid({
+        url:'/admin/users/selectAll',
+        rownumbers:'true',
+        fitColumns:'true',
+        pagination:'true',
+        toolbar:'#ToolBar',
+        columns:[[
+            {field:'cb',checkbox:'true'},
+            {field:'id',title:'编号',width:100,align:'center'},
+            {field:'telephone',title:'手机号',width:100,align:'center'},
+            {field:'isadmin',title:'是否是管理员',width:100,align:'center',
+                formatter: function (value,row,index) {
+                    return "管理员";
+                }
+            },
+            {field:'opt',title:'操作',width:100,align:'center',
+                formatter: function (value,row,index) {
+                    return "<a href='javascript:deleteOne("+row.id+")'>删除</a>";
+                }
+            }
+        ]]
+    });
+
+    //点击添加打开弹框
+    function Add() {
+        $("#AddDialog").dialog('open').dialog('setTitle',"添加数据");
+    }
+
+    //添加弹框提交
+    function AddDialog() {
+        $("#AddDialogForm").form('submit',{
+            url:'/admin/users/insert',
+            success:function(data){
+                var msg=$.parseJSON(data);
+                if (msg.result!=1){
+                    $("#AddDialog").dialog('close');
+                    $.messager.alert("系统提示","系统维护中。。。");
+                    return;
+                } else{
+                    $("#AddDialog").dialog('close');
+                    $("#dg").datagrid('reload'); //刷新
+                    $.messager.alert("系统提示","添加成功");
+                }
+            }
+
+        })
+    }
+
+    //关闭弹框
+    function CloseDialog(dialogId) {
+        $("#"+dialogId).dialog('close');
+    }
+
+    //点击修改打开弹框
+    function ModifyBySelect() {
+        //获取选中的行
+        var selectRows = $("#dg").datagrid('getSelections');
+        if(selectRows.length!=1){
+            $.messager.alert("系统提示","你未选择数据或选取了多行数据");
+            return;
+        }
+        //获取选中的数据
+        var selectRow = selectRows[0];
+        //获得行对象的数据去数据库查询结果加载到表单中显示
+        $.post("/admin/users/selectOne",{id:selectRow.id},function (data) {
+            if (data==null){
+                $.messager.alert("系统提示","你选中的数据不存在，请刷新后重试。。。");
+                return;
+            }
+            //打开编辑对话框
+            $("#UpDialog").dialog('open').dialog('setTitle',"修改数据");
+            $("#UpDialogForm").form('load',data);
+        },"json")
+    }
+
+    //修改弹框提交
+    function UpDialog() {
+        $("#UpDialogForm").form('submit',{
+            url:'/admin/users/update',
+            success:function(data){
+                var msg=$.parseJSON(data);
+                if (msg.result!=1){
+                    $("#UpDialog").dialog('close');
+                    $.messager.alert("系统提示","系统维护中。。。");
+                    return;
+                } else{
+                    $("#UpDialog").dialog('close');
+                    $("#dg").datagrid('reload'); //刷新
+                    $.messager.alert("系统提示","修改成功");
+                }
+            }
+
+        })
+    }
+
+    //点击删除选中记录
+    function DeleteByFruitName() {
+        //获取选择行
+        var selectRows = $("#dg").datagrid('getSelections');
+        if( 0 == selectRows.length ){
+            $.messager.alert("系统提示", "请选择要删除的数据");
+            return;
+        }
+        //返回id字符串(1,2,3)
+        var id='';
+        //循环拼接字符串
+        for( var i = 0 ; i < selectRows.length; i++ ){
+            id=id+selectRows[i].id+',';
+        }
+        //去掉末尾逗号
+        id=id.substr(0,id.length-1);
+        $.messager.confirm("系统提示", "你确定要删除<font color=red> " + selectRows.length + " </font>条数据吗?", function(xo){
+            if( xo ){
+                $("#dg").datagrid('reload');
+                //支持多项删除
+                //alert(selectIndexToString);
+                $.post("/admin/users/deleteMore",{id:id},function(data){
+                    if (data.result==0){
+                        $.messager.alert("系统提示","系统维护中。。。");
+                        return;
+                    } else{
+                        $("#dg").datagrid('reload'); //刷新
+                        $.messager.alert("系统提示","成功删除"+data.result+"条数据");
+                    }
+                },"json");
+            }
+        });
+    }
+
+    //删除单条数据
+    function deleteOne(id){
+        $.messager.confirm("系统提示","确定删除吗？",function(r) {
+            if (r) {
+                $.post("/admin/users/delete",{id:id},function(data){
+                    if (data.result==0){
+                        $.messager.alert("系统提示","系统维护中。。。");
+                        return;
+                    } else{
+                        $("#dg").datagrid('reload'); //刷新
+                        $.messager.alert("系统提示","成功删除");
+                    }
+                },"json");
+            }
+        });
+    }
+
+    //条件查询
+    function search() {
+        $("#dg").datagrid('load',{
+            'telePhone':$("#telePhone").val()
+        })
+    }
+</script>
+</body>
+</html>

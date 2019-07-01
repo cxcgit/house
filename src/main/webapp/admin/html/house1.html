@@ -1,0 +1,159 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>已审核房屋</title>
+    <link rel="stylesheet" type="text/css" href="../easyUI/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../easyUI/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="../easyUI/css/demo.css">
+    <script src="../js/jquery-1.8.3.js"></script>
+    <!--jquery.easyui.min.js包含了easyUI中的所有插件-->
+    <script src="../js/jquery.easyui.min.js"></script>
+</head>
+<body>
+<!--显示全部的表格-->
+<table id="dg"></table>
+
+<!--显示工具栏-->
+<div id="ToolBar">
+    <div style="height: 40px;">
+        <a href="javascript:passMore()" class="easyui-linkbutton"
+            iconCls="icon-edit" plain="true">批量取消审核</a>
+    </div>
+    标题：<INPUT class=text type=text name=title id="title">
+    价格：<SELECT name=priceScope id="priceScope">
+    <OPTION selected value="">不限</OPTION>
+    <OPTION value=0-3000>3000元以下</OPTION>
+    <OPTION value=3000-8000>3000—8000元</OPTION>
+    <OPTION value=8000-1000000>8000元以上
+    </OPTION></SELECT>
+    位置：<SELECT id=streetId name=streetId>
+    <OPTION value="">不限</OPTION></SELECT>
+    房型：<SELECT id=typeId name=typeId>
+    <OPTION value="">不限</OPTION></SELECT>
+    面积：<SELECT name=floorageScope id="floorageScope">
+    <OPTION selected value="">不限</OPTION>
+    <OPTION value=0-40>40以下</OPTION>
+    <OPTION value=40-100>40-100</OPTION>
+    <OPTION value=100-1000000>100以上</OPTION></SELECT>
+    <a id="btn" href="javascript:search()" class="easyui-linkbutton" data-options="iconCls:'icon-search'">搜索</a>
+</div>
+<script type="text/javascript">
+    //查询所有街道
+    $.post('/admin/street/selectAllStreet',function (data) {
+        if (data!=null){
+            for (var i = 0; i <data.length ; i++) {
+                $("#streetId").append("<option value='"+data[i].id+"'>"+data[i].name+"</option>");
+            }
+        }
+    },'json')
+    //查询所有房型
+    $.post('/admin/type/selectAllType',function (data) {
+        if (data!=null){
+            for (var i = 0; i <data.length ; i++) {
+                $("#typeId").append("<option value='"+data[i].id+"'>"+data[i].name+"</option>");
+            }
+        }
+    },'json')
+    //查询通过审核房子数据显示
+    $('#dg').datagrid({
+        url:'/admin/house/selectByIspass',
+        queryParams: {
+            isdel:0,
+            ispass:1
+        },
+        fitColumns:'true',
+        pagination:'true',
+        toolbar:'#ToolBar',
+        columns:[[
+            {field:'cb',checkbox:'true'},
+            {field:'id',title:'编号',width:100,align:'center'},
+            {field:'userId',title:'用户编号',width:100,align:'center'},
+            {field:'tname',title:'类型',width:100,align:'center'},
+            {field:'title',title:'标题',width:100,align:'center'},
+            {field:'description',title:'描述',width:100,align:'center'},
+            {field:'price',title:'价格',width:100,align:'center'},
+            {field:'pubdate',title:'发布日期',width:100,align:'center',
+                formatter: function (value,row,index) {
+                    var date=new Date(value);
+                    var year=date.getFullYear();
+                    var month=date.getMonth()+1;
+                    var day=date.getDate();
+                    return year+"-"+month+"-"+day;
+                }
+            },
+            {field:'floorage',title:'面积',width:100,align:'center'},
+            {field:'contact',title:'联系电话',width:100,align:'center'},
+            {field:'dname',title:'区域',width:100,align:'center'},
+            {field:'sname',title:'街道',width:100,align:'center'},
+            {field:'ispass',title:'审核',width:100,align:'center',
+                formatter: function (value,row,index) {
+                    return "已审核";
+                }},
+            {field:'opt',title:'操作',width:100,align:'center',
+                formatter: function (value,row,index) {
+                    return "<a href='javascript:passOne("+row.id+")'>取消审核</a>";
+                }
+            }
+        ]]
+    });
+
+    //单个取消审核
+    function passOne(id) {
+        $.post('/admin/house/updateByIspass',{'id':id,'ispass':0},function (data) {
+            if (data.result==1){
+                $("#dg").datagrid('reload'); //刷新
+                $.messager.alert("系统提示","取消审核成功");
+            } else{
+                $("#dg").datagrid('reload'); //刷新
+                $.messager.alert("系统提示","请重新取消审核");
+            }
+        },'json')
+    }
+
+    //批量取消审核
+    function passMore() {
+        //获取选择行
+        var selectRows = $("#dg").datagrid('getSelections');
+        if( 0 == selectRows.length ){
+            $.messager.alert("系统提示", "请选择要取消审核的数据");
+            return;
+        }
+        //返回id字符串(1,2,3)
+        var id='';
+        //循环拼接字符串
+        for( var i = 0 ; i < selectRows.length; i++ ){
+            id=id+selectRows[i].id+',';
+        }
+        //去掉末尾逗号
+        id=id.substr(0,id.length-1);
+        $.messager.confirm("系统提示", "你确定要取消审核<font color=red> " + selectRows.length + " </font>条数据吗?", function(xo){
+            if( xo ){
+                $.post("/admin/house/updateMoreByIspass",{id:id,'ispass':0},function(data){
+                    if (data.result==0){
+                        $("#dg").datagrid('reload'); //刷新
+                        $.messager.alert("系统提示","请重新取消审核");
+                        return;
+                    } else{
+                        $("#dg").datagrid('reload'); //刷新
+                        $.messager.alert("系统提示","成功取消审核"+data.result+"条数据");
+                    }
+                },"json");
+            }
+        });
+    }
+    //条件查询
+    function search() {
+        $("#dg").datagrid('load',{
+            'isdel':0,
+            'ispass':1,
+            'title':$("#title").val(),
+            'priceScope':$("#priceScope").val(),
+            'streetId':$("#streetId").val(),
+            'typeId':$("#typeId").val(),
+            'floorageScope':$("#floorageScope").val()
+        })
+    }
+</script>
+</body>
+</html>
