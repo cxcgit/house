@@ -3,6 +3,7 @@ package com.k9501.house.controller.page;
 
 import com.k9501.house.entity.Users;
 import com.k9501.house.service.UsersService;
+import com.k9501.house.util.SmsUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,8 +27,12 @@ public class UsersController {
 
     @RequestMapping("/insert")
     @ResponseBody
-    public String insert(Users users){
-        int i = usersService.insertSelective(users);
+    public String insert(Users users,String code,HttpSession session){
+        String num =session.getAttribute("num").toString();
+        int i=0;
+        if (num.equals(code)){
+            i = usersService.insertSelective(users);
+        }
         return "{\"result\":"+i+"}";
     }
 
@@ -57,4 +62,17 @@ public class UsersController {
         int i = usersService.updateByPrimaryKeySelective(users);
         return "{\"result\":"+i+"}";
     }
+
+    //注册时发送验证码
+    @RequestMapping("/sendMsg")
+    @ResponseBody
+    public String sendMsg(String tel,HttpSession session){
+        int num=(int)(Math.random()*10000);
+        System.out.println(num);
+        session.setAttribute("num",num);
+        String smsText="验证码为"+num+"，60秒内有效";
+        int i = SmsUtil.sendMsg(tel, smsText);
+        return "{\"result\":"+i+"}";
+    }
 }
+

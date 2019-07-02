@@ -96,15 +96,17 @@
             },
             {field:'opt',title:'操作',width:100,align:'center',
                 formatter: function (value,row,index) {
-                    return "<a href='javascript:passOne("+row.id+")'>通过审核</a>";
+                    return "<a href='javascript:passOne("+row.id+","+row.contact+")'>通过审核</a>";
                 }
             }
         ]]
     });
 
     //单个通过审核
-    function passOne(id) {
-        $.post('/admin/house/updateByIspass',{'id':id,'ispass':1},function (data) {
+    function passOne(id,contact) {
+        alert(contact)
+        $.post('/admin/house/updateByIspass',{'id':id,'ispass':1,'telephone':contact},function (data) {
+
             if (data.result==1){
                 $("#dg").datagrid('reload'); //刷新
                 $.messager.alert("系统提示","审核成功");

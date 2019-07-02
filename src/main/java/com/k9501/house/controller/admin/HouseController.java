@@ -4,6 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.k9501.house.service.HouseService;
 import com.k9501.house.util.HouseCondition;
 import com.k9501.house.util.HouseExt;
+import com.k9501.house.util.SmsUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,18 +20,7 @@ public class HouseController {
 
     @RequestMapping("/selectByIspass")
     @ResponseBody
-    public Map<String,Object> selectByIspass(String priceScope,String floorageScope,HouseCondition houseCondition){
-        //将价格区间字符串和面积区间字符串分割开
-        if (priceScope!=null&&priceScope!=""){
-            String[] prices = priceScope.split("-");
-            houseCondition.setPriceFrom(Long.valueOf(prices[0]));
-            houseCondition.setPriceTo(Long.valueOf(prices[1]));
-        }
-        if (floorageScope!=null&&floorageScope!=""){
-            String[] floorages = floorageScope.split("-");
-            houseCondition.setFloorageFrom(Integer.valueOf(floorages[0]));
-            houseCondition.setFloorageTo(Integer.valueOf(floorages[1]));
-        }
+    public Map<String,Object> selectByIspass(HouseCondition houseCondition){
         PageInfo<HouseExt> pageInfo = houseService.selectAll(houseCondition);
         Map<String,Object> map=new HashMap<>();
         map.put("total",pageInfo.getTotal());
@@ -40,8 +30,12 @@ public class HouseController {
 
     @RequestMapping("/updateByIspass")
     @ResponseBody
-    public String updateByIspass(String id,Integer ispass){
+    public String updateByIspass(String id,Integer ispass,String telephone){
         int i = houseService.updateIspassByPrimaryKey(id,ispass);
+//        if (i>0){
+//            String msg="您发布的出租房已通过审核";
+//            SmsUtil.sendMsg(telephone,msg);
+//        }
         return "{\"result\":"+i+"}";
     }
 

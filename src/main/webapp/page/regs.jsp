@@ -7,7 +7,7 @@
   <META content="text/html; charset=utf-8" http-equiv=Content-Type>
   <LINK rel=stylesheet type=text/css href="../css/style.css">
   <META name=GENERATOR content="MSHTML 8.00.7601.17514">
-  <script type="text/javascript" src="/admin/js/jquery-1.8.3.js"></script>
+  <script type="text/javascript" src="../admin/js/jquery-1.8.3.js"></script>
 </HEAD>
 <BODY>
 <DIV id=header class=wrap>
@@ -36,13 +36,18 @@
   </TR>
   <TR>
     <TD class=field>电　　话：</TD>
-    <TD><INPUT class=text type=text name=telephone> </TD>
+    <TD><INPUT class=text type=text name=telephone id="tel">
+      <INPUT type=button value="获取验证码" id="but2"></TD>
+  </TR>
+  <TR>
+    <TD class=field>验 证 码：</TD>
+    <TD><INPUT class=text type=text name=code> </TD>
   </TR>
   <TR hidden>
     <TD class=field>是否是管理员：</TD>
     <TD><INPUT class=text type=text name=isadmin value="0"> </TD>
   </TR>
-  <span id="span2"></span>
+  <span id="span2"></span><span id="span3"></span>
   </TBODY>
 </TABLE>
 <DIV class=buttons>
@@ -78,6 +83,18 @@
            $("#span1").html('名字可用').css('color','green')
        }
     },"json")
+  })
+
+  //点击获取验证码
+  $("#but2").click(function () {
+      //发送异步请求发送短信
+      $.post('/page/users/sendMsg',{'tel':$('#tel').val()},function (data) {
+          if (data.result<1){
+              $("#span3").html('短信发送失败，请重试').css('color','red');
+          }else{
+              alert("验证码通过短信发送成功，请注意查收。")
+          }
+      },'json')
   })
 
   //点击立即注册
