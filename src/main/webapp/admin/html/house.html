@@ -104,9 +104,7 @@
 
     //单个通过审核
     function passOne(id,contact) {
-        alert(contact)
         $.post('/admin/house/updateByIspass',{'id':id,'ispass':1,'telephone':contact},function (data) {
-
             if (data.result==1){
                 $("#dg").datagrid('reload'); //刷新
                 $.messager.alert("系统提示","审核成功");
@@ -127,15 +125,18 @@
         }
         //返回id字符串(1,2,3)
         var id='';
+        var telephone='';
         //循环拼接字符串
         for( var i = 0 ; i < selectRows.length; i++ ){
             id=id+selectRows[i].id+',';
+            telephone=telephone+selectRows[i].contact+',';
         }
         //去掉末尾逗号
         id=id.substr(0,id.length-1);
+        telephone=telephone.substr(0,telephone.length-1);
         $.messager.confirm("系统提示", "你确定要审核<font color=red> " + selectRows.length + " </font>条数据吗?", function(xo){
             if( xo ){
-                $.post("/admin/house/updateMoreByIspass",{'id':id,'ispass':1},function(data){
+                $.post("/admin/house/updateMoreByIspass",{'id':id,'ispass':1,'telephone':telephone},function(data){
                     if (data.result==0){
                         $("#dg").datagrid('reload'); //刷新
                         $.messager.alert("系统提示","请重新审核");

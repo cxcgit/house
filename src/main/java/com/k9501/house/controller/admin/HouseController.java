@@ -32,7 +32,7 @@ public class HouseController {
     @ResponseBody
     public String updateByIspass(String id,Integer ispass,String telephone){
         int i = houseService.updateIspassByPrimaryKey(id,ispass);
-//        if (i>0){
+//        if (i>0&&telephone!=null){
 //            String msg="您发布的出租房已通过审核";
 //            SmsUtil.sendMsg(telephone,msg);
 //        }
@@ -41,9 +41,13 @@ public class HouseController {
 
     @RequestMapping("/updateMoreByIspass")
     @ResponseBody
-    public String updateMoreByIspass(String id,Integer ispass) {
+    public String updateMoreByIspass(String id,Integer ispass,String telephone) {
         String[] ids = id.split(",");
         int i = houseService.updateIspassByPrimaryKeys(ids,ispass);
+//        if (i>0&&telephone!=null){
+//            String msg="您发布的出租房已通过审核";
+//            SmsUtil.sendMsg(telephone,msg);
+//        }
         return "{\"result\":" + i + "}";
     }
 }
